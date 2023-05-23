@@ -1,14 +1,11 @@
 import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
-import { createServerSideHelpers } from '@trpc/react-query/server';
-import { appRouter } from "~/server/api/root";
-import superjson from "superjson";
 import Image from "next/image";
 
 import { LoadingPage } from "~/components/loading";
 import { api } from "~/utils/api";
-import { prisma } from "~/server/db";
 import PostView from "~/components/postView";
+import generateHelper from "~/server/helpers/trpcServerHelper";
 
 const ProfileFeed = (props: { userId: string }) => {
     const { data, isLoading } = api.posts.getPostsByUserId.useQuery({ userId: props.userId });
@@ -55,11 +52,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
 };
 
 export const getStaticProps: GetStaticProps = async (context) => {
-    const helper = createServerSideHelpers({
-        router: appRouter,
-        ctx: { prisma, userId: null },
-        transformer: superjson, // optional - adds superjson serialization
-    });
+    const helper = generateHelper();
 
     const slug = context?.params?.slug;
     if (typeof slug !== "string") throw new Error("Slug is not a string");
