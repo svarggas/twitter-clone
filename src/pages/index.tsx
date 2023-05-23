@@ -9,10 +9,9 @@ import Image from "next/image";
 import { LoadingPage } from "~/components/loading";
 dayjs.extend(relativeTime);
 
-
 const CreatePostWizard = () => {
   const { user } = useUser();
-  console.log("user", user)
+
   if (!user) return null;
 
   return (
@@ -56,8 +55,26 @@ const PostView = (props: PostWithUser) => {
           <span>{`@${author.username}`}</span>
           <span className="font-slim">{`${dayjs(post.createdAt).fromNow()}`}</span>
         </div>
-        <span>{post.content}</span>
+        <span className="text-2xl">{post.content}</span>
       </div>
+    </div>
+  )
+}
+
+const Feed = () => {
+  const { data, isLoading } = api.posts.getAll.useQuery();
+
+  if (isLoading) return <LoadingPage />;
+
+  if (!data) return <div>No data available</div>;
+
+  return (
+    <div className="flex flex-col">
+      {
+        (data as PostWithUser[]).map((fullPost, index) => (
+          <PostView {...fullPost} key={index} />
+        ))
+      }
     </div>
   )
 }
@@ -65,11 +82,9 @@ const PostView = (props: PostWithUser) => {
 const Home: NextPage = () => {
 
   const user = useUser();
-  const { data, isLoading } = api.posts.getAll.useQuery();
 
-  if (isLoading) return <LoadingPage />;
-
-  if (!data) return <div>No data available</div>;
+  // Catch early and use cached values
+  api.posts.getAll.useQuery();
 
   return (
     <>
@@ -84,11 +99,7 @@ const Home: NextPage = () => {
             {!user.isSignedIn && <div className="flex justify-center"><SignInButton /></div>}
             {user.isSignedIn && <CreatePostWizard />}
           </div>
-          <div className="flex flex-col">
-            {
-              data?.map((fullPost, index) => (<PostView {...fullPost} key={index} />))
-            }
-          </div>
+          <Feed />
         </div>
       </main>
     </>
