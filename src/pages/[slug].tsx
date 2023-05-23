@@ -2,7 +2,7 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { useUser, SignInButton } from "@clerk/nextjs";
 
-const SinglePostPage: NextPage = () => {
+const ProfilePage: NextPage = () => {
     return (
         <>
             <Head>
@@ -19,4 +19,4 @@ const SinglePostPage: NextPage = () => {
     );
 };
 
-export default SinglePostPage;
+export default ProfilePage;
