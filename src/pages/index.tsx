@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 
 import { api } from "~/utils/api";
 import { LoadingPage } from "~/components/loading";
-import PostView, { PostWithUser } from "~/components/postView";
+import PostView from "~/components/postView";
 
 dayjs.extend(relativeTime);
 
@@ -18,7 +18,7 @@ const CreatePostWizard = () => {
   const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
     onSuccess: () => {
       setInput("");
-      ctx.posts.getAll.invalidate();
+      void ctx.posts.getAll.invalidate();
     },
     onError: (err) => {
       const errorMsg = err.data?.zodError?.fieldErrors?.content;
@@ -85,7 +85,7 @@ const Feed = () => {
   return (
     <div className="flex flex-col">
       {
-        (data as PostWithUser[]).map((fullPost, index) => (
+        data.map((fullPost, index) => (
           <PostView {...fullPost} key={index} />
         ))
       }

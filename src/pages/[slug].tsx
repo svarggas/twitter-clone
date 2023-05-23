@@ -1,4 +1,4 @@
-import { GetStaticProps, InferGetStaticPropsType, type NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { createServerSideHelpers } from '@trpc/react-query/server';
 import { appRouter } from "~/server/api/root";
@@ -8,7 +8,7 @@ import Image from "next/image";
 import { LoadingPage } from "~/components/loading";
 import { api } from "~/utils/api";
 import { prisma } from "~/server/db";
-import PostView, { PostWithUser } from "~/components/postView";
+import PostView from "~/components/postView";
 
 const ProfileFeed = (props: { userId: string }) => {
     const { data, isLoading } = api.posts.getPostsByUserId.useQuery({ userId: props.userId });
@@ -19,7 +19,7 @@ const ProfileFeed = (props: { userId: string }) => {
     return (
         <div className="flex flex-col">
             {
-                (data as PostWithUser[]).map((fullPost, index) => (
+                data.map((fullPost, index) => (
                     <PostView {...fullPost} key={index} />
                 ))
             }
@@ -27,8 +27,7 @@ const ProfileFeed = (props: { userId: string }) => {
     )
 }
 
-type PageProps = InferGetStaticPropsType<typeof getStaticProps>;
-const ProfilePage: NextPage<PageProps> = ({ username }) => {
+const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
     const { data } = api.profile.getUserByUsername.useQuery({ username });
 
     if (!data) return <div>404</div>;
@@ -55,18 +54,17 @@ const ProfilePage: NextPage<PageProps> = ({ username }) => {
     );
 };
 
-export const getStaticProps: GetStaticProps = async (context: any) => {
+export const getStaticProps: GetStaticProps = async (context) => {
     const helper = createServerSideHelpers({
         router: appRouter,
         ctx: { prisma, userId: null },
         transformer: superjson, // optional - adds superjson serialization
     });
 
-    const slug = context.params.slug;
+    const slug = context?.params?.slug;
     if (typeof slug !== "string") throw new Error("Slug is not a string");
 
     const username = slug.replace("@", "");
-
     await helper.profile.getUserByUsername.prefetch({ username });
 
     return {

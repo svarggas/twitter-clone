@@ -6,7 +6,7 @@ import { Redis } from "@upstash/redis";
 
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 import filterUserForClient from "~/server/helpers/filterUserForClient";
-import { Post } from "@prisma/client";
+import type { Post } from "@prisma/client";
 
 const addUserDataToPosts = async (posts: Post[]) => {
     const users = (
