@@ -1,13 +1,15 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import { useState } from "react";
 import { useUser, SignInButton } from "@clerk/nextjs";
-import { RouterOutputs, api } from "~/utils/api";
-
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+
+import { RouterOutputs, api } from "~/utils/api";
 import { LoadingPage } from "~/components/loading";
-import { useState } from "react";
+
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
@@ -17,6 +19,14 @@ const CreatePostWizard = () => {
     onSuccess: () => {
       setInput("");
       ctx.posts.getAll.invalidate();
+    },
+    onError: (err) => {
+      const errorMsg = err.data?.zodError?.fieldErrors?.content;
+      if (errorMsg?.[0]) {
+        toast.error(errorMsg?.[0]);
+      } else {
+        toast.error("Failed to create post");
+      }
     }
   });
 
@@ -41,9 +51,26 @@ const CreatePostWizard = () => {
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (input !== "") {
+              mutate({ content: input });
+            }
+          }
+        }}
         disabled={isPosting}
       />
-      <button onClick={() => mutate({ content: input })}>Post</button>
+      {
+        input !== "" && (
+          <button
+            disabled={isPosting}
+            onClick={() => mutate({ content: input })}
+          >
+            Post
+          </button>
+        )
+      }
     </div>
   )
 }
