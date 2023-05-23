@@ -96,5 +96,25 @@ export const postRouter = createTRPCRouter({
             },
             take: 100,
         }).then(addUserDataToPosts)
-        )
+        ),
+
+    getById: publicProcedure.input(
+        z.object({
+            id: z.string(),
+        })
+    )
+        .query(async ({ input, ctx }) => {
+            const post = await ctx.prisma.post.findUnique({
+                where: { id: input.id },
+            })
+
+            if (!post) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Post not found",
+                });
+            }
+
+            return (await addUserDataToPosts([post]))[0];
+        })
 });
